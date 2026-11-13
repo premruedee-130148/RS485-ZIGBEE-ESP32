@@ -1,0 +1,31 @@
+let payload = msg.payload;
+
+// แปลงเป็น JSON Object กรณีข้อมูลเข้ามารูปแบบ String
+if (typeof payload === "string") {
+    try {
+        payload = JSON.parse(payload);
+    } catch (e) {
+        return null;
+    }
+}
+
+// ดึงค่าความชื้นจากเซ็นเซอร์ (เปลี่ยนชื่อฟิลด์ตามจริง เช่น humidity)
+let humidityValue = payload.humidity ?? 0;
+
+let pumpRequest = false;
+// เงื่อนไข: ต่ำกว่า 30 สั่งเปิด (true), ถึง 45 ขึ้นไปสั่งปิด (false)
+if (humidityValue < 30) {
+    pumpRequest = true;  // เปิดปั๊ม
+} else if (humidityValue >= 45) {
+    pumpRequest = false; // ปิดปั๊ม
+} else {
+    return null; // ช่วงระหว่าง 30 ถึง 45 ไม่ส่งค่าซ้ำ
+}
+
+// จัดรูปแบบ JSON ตามที่กลุ่ม 6 ต้องการ
+msg.payload = {
+    group_id: "group3",
+    request: pumpRequest
+};
+
+return msg;
